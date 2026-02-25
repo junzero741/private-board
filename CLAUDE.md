@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Concept
+
+→ [`docs/concept.md`](docs/concept.md) — 서비스 소개, 핵심 시나리오, 기능 목록
+→ [`docs/technical.md`](docs/technical.md) — 데이터 모델, 보안 설계, 이미지 업로드 플로우, 인프라 결정
+
 ## Stack
 
 - **Monorepo**: Nx 22 + pnpm workspaces
