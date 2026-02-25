@@ -14,6 +14,7 @@ export default function Editor({ onChange }: EditorProps) {
 
   const editor = useEditor({
     extensions: [StarterKit, Image],
+    immediatelyRender: false,
     onUpdate({ editor }) {
       onChange(editor.getHTML());
     },
