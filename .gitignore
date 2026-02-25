@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Nx cache
+.nx/cache
+.nx/workspace-data
+
+# Build outputs
+dist/
+.next/
+out/
+
+# Prisma generated client
+apps/backend/generated/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/launch.json
