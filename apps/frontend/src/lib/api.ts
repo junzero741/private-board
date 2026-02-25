@@ -1,26 +1,17 @@
+import {
+  API_ROUTES,
+  CreatePostRequest,
+  CreatePostResponse,
+  UnlockPostRequest,
+  UnlockPostResponse,
+} from '@private-board/shared';
+
+export type { CreatePostRequest, CreatePostResponse, UnlockPostRequest, UnlockPostResponse };
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
-export interface CreatePostRequest {
-  title: string;
-  content: string;
-  password: string;
-}
-
-export interface CreatePostResponse {
-  slug: string;
-}
-
-export interface ViewPostRequest {
-  password: string;
-}
-
-export interface ViewPostResponse {
-  title: string;
-  content: string;
-}
-
 export async function createPost(data: CreatePostRequest): Promise<CreatePostResponse> {
-  const res = await fetch(`${API_BASE}/posts`, {
+  const res = await fetch(`${API_BASE}${API_ROUTES.posts.create}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -30,8 +21,8 @@ export async function createPost(data: CreatePostRequest): Promise<CreatePostRes
   return res.json();
 }
 
-export async function viewPost(slug: string, data: ViewPostRequest): Promise<ViewPostResponse> {
-  const res = await fetch(`${API_BASE}/posts/${slug}/view`, {
+export async function viewPost(slug: string, data: UnlockPostRequest): Promise<UnlockPostResponse> {
+  const res = await fetch(`${API_BASE}${API_ROUTES.posts.unlock(slug)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),

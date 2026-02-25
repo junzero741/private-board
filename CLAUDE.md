@@ -2,10 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Concept
+## Project Instruction
 
 → [`docs/concept.md`](docs/concept.md) — 서비스 소개, 핵심 시나리오, 기능 목록
 → [`docs/technical.md`](docs/technical.md) — 데이터 모델, 보안 설계, 이미지 업로드 플로우, 인프라 결정
+- [`docs/bugs.md`](docs/bug.md) - 개발, 혹은 운영 중 발생한 심각한 오류에 대한 리포트 목록
+- [`docs/lessons.md`](docs/lessons.md) — 실수에서 얻은 교훈 목록. **코드 작성 전에 반드시 읽을 것.**
 
 ## Stack
 

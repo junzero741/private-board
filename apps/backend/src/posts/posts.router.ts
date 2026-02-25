@@ -1,9 +1,19 @@
 import { Router, Request, Response } from 'express';
+import {
+  ROUTE_PATTERNS,
+  CreatePostRequest,
+  CreatePostResponse,
+  UnlockPostRequest,
+  UnlockPostResponse,
+} from '@private-board/shared';
 import { createPost, unlockPost } from './posts.service';
 
 const router = Router();
 
-router.post('/', async (req: Request, res: Response) => {
+router.post(ROUTE_PATTERNS.posts.create, async (
+  req: Request<{}, CreatePostResponse, CreatePostRequest>,
+  res: Response<CreatePostResponse | { error: string }>
+) => {
   const { title, content, password } = req.body;
 
   if (!title || !content || !password) {
@@ -15,7 +25,10 @@ router.post('/', async (req: Request, res: Response) => {
   res.status(201).json(result);
 });
 
-router.post('/:slug/unlock', async (req: Request, res: Response) => {
+router.post(ROUTE_PATTERNS.posts.unlock, async (
+  req: Request<{ slug: string }, UnlockPostResponse, UnlockPostRequest>,
+  res: Response<UnlockPostResponse | { error: string }>
+) => {
   const { slug } = req.params;
   const { password } = req.body;
 
