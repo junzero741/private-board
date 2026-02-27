@@ -1,1 +1,67 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* Brand colors — blue-slate tone */
+  --color-brand-50: oklch(0.97 0.01 250);
+  --color-brand-100: oklch(0.93 0.02 250);
+  --color-brand-200: oklch(0.87 0.04 250);
+  --color-brand-600: oklch(0.55 0.15 250);
+  --color-brand-700: oklch(0.45 0.15 250);
+  --color-brand-800: oklch(0.35 0.12 250);
+
+  /* Surface / background */
+  --color-surface: oklch(0.985 0.002 250);
+  --color-surface-card: oklch(1 0 0);
+
+  /* Border */
+  --color-border: oklch(0.88 0.01 250);
+  --color-border-focus: oklch(0.65 0.12 250);
+
+  /* Text */
+  --color-text-primary: oklch(0.22 0.02 250);
+  --color-text-secondary: oklch(0.45 0.02 250);
+  --color-text-muted: oklch(0.6 0.01 250);
+
+  /* Status */
+  --color-error: oklch(0.58 0.2 25);
+  --color-error-bg: oklch(0.95 0.03 25);
+  --color-success: oklch(0.55 0.16 155);
+  --color-success-bg: oklch(0.95 0.03 155);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px oklch(0.22 0.02 250 / 0.06);
+  --shadow-md: 0 4px 12px oklch(0.22 0.02 250 / 0.08);
+
+  /* Transition */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Font */
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-text-primary antialiased;
+  }
+
+  /* Tiptap editor styles */
+  .tiptap.ProseMirror {
+    @apply outline-none;
+  }
+
+  .tiptap.ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply text-text-muted pointer-events-none float-left h-0;
+  }
+
+  .tiptap.ProseMirror img {
+    @apply rounded-lg max-w-full;
+  }
+
+  /* Drag-over visual feedback */
+  .editor-drag-over {
+    border-style: dashed;
+    background-color: oklch(0.97 0.01 250 / 0.5);
+  }
+}
