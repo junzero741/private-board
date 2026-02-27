@@ -4,6 +4,9 @@ export const API_ROUTES = {
     create: '/posts',
     unlock: (slug: string) => `/posts/${slug}/unlock`,
   },
+  uploads: {
+    image: '/uploads/image',
+  },
 } as const;
 
 // 백엔드용: Express 라우터 패턴
@@ -11,6 +14,9 @@ export const ROUTE_PATTERNS = {
   posts: {
     create: '/',
     unlock: '/:slug/unlock',
+  },
+  uploads: {
+    image: '/image',
   },
 } as const;
 
@@ -33,4 +39,9 @@ export interface UnlockPostRequest {
 export interface UnlockPostResponse {
   title: string;
   content: string;
+}
+
+// 이미지 업로드
+export interface UploadImageResponse {
+  url: string;
 }
