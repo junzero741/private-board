@@ -52,7 +52,7 @@ export default function RootLayout({
 
         {/* Feedback floating button */}
         <a
-          href="https://forms.google.com/TODO"
+          href="https://forms.gle/icQCbPWP2wT3HUUD9"
           target="_blank"
           rel="noopener noreferrer"
           title="피드백 보내기"
