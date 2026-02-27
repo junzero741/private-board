@@ -7,7 +7,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: 'Private Board',
+  title: '님만보삼',
   description: '비밀번호로 보호된 문서를 안전하게 공유하세요.',
 };
 
@@ -35,7 +35,7 @@ export default function RootLayout({
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
             <a href="/" className="text-lg font-semibold text-text-primary">
-              Private Board
+              님만보삼
             </a>
           </div>
         </header>

@@ -7,12 +7,12 @@ import { AppError } from './lib/errors';
 import postsRouter from './posts/posts.router';
 import uploadsRouter from './uploads/uploads.router';
 
-const host = process.env.HOST ?? 'localhost';
+const host = process.env.HOST ?? '0.0.0.0';
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000' }));
 app.use(express.json());
 
 // 글로벌 rate limit: IP당 분당 100회

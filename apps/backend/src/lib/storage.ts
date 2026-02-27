@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 export interface StorageProvider {
   save(buffer: Buffer, filename: string, mimeType: string): Promise<string>;
@@ -24,6 +25,44 @@ export class LocalStorageProvider implements StorageProvider {
   }
 }
 
+export class R2StorageProvider implements StorageProvider {
+  private readonly client: S3Client;
+  private readonly bucket: string;
+  private readonly publicUrl: string;
+
+  constructor() {
+    const accountId = process.env.R2_ACCOUNT_ID;
+    const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+    const bucket = process.env.R2_BUCKET_NAME;
+    const publicUrl = process.env.R2_PUBLIC_URL;
+
+    if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !publicUrl) {
+      throw new Error('R2 storage requires R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL');
+    }
+
+    this.bucket = bucket;
+    this.publicUrl = publicUrl.replace(/\/$/, '');
+    this.client = new S3Client({
+      region: 'auto',
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId, secretAccessKey },
+    });
+  }
+
+  async save(buffer: Buffer, filename: string, mimeType: string): Promise<string> {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: filename,
+        Body: buffer,
+        ContentType: mimeType,
+      })
+    );
+    return `${this.publicUrl}/${filename}`;
+  }
+}
+
 let storage: StorageProvider | null = null;
 
 export function getStorage(): StorageProvider {
@@ -32,6 +71,9 @@ export function getStorage(): StorageProvider {
     switch (provider) {
       case 'local':
         storage = new LocalStorageProvider();
+        break;
+      case 'r2':
+        storage = new R2StorageProvider();
         break;
       default:
         throw new Error(`Unknown storage provider: ${provider}`);
