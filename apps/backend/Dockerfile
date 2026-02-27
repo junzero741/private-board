@@ -2,8 +2,8 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Enable corepack for pnpm
-RUN corepack enable
+# Enable corepack and pin pnpm version
+RUN corepack enable && corepack prepare pnpm@8.15.5 --activate
 
 # Copy workspace config files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json ./
@@ -31,7 +31,7 @@ FROM node:20-slim
 
 WORKDIR /app
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@8.15.5 --activate
 
 # Copy build output (includes generated package.json + lockfile)
 COPY --from=builder /app/dist/apps/backend ./
