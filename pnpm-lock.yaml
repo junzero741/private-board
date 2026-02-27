@@ -13,7 +13,7 @@ importers:
         version: 7.4.1
       '@prisma/client':
         specifier: ^7.4.1
-        version: 7.4.1(typescript@5.9.3)
+        version: 7.4.1(prisma@7.4.1)(typescript@5.9.3)
       '@tiptap/extension-image':
         specifier: ^3.20.0
         version: 3.20.0(@tiptap/core@3.20.0)
@@ -38,6 +38,9 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.22.1
+      express-rate-limit:
+        specifier: ^8.2.1
+        version: 8.2.1(express@4.22.1)
       multer:
         specifier: ^2.0.2
         version: 2.0.2
@@ -4917,22 +4920,6 @@ packages:
       typescript: 5.9.3
     dev: false
 
-  /@prisma/client@7.4.1(typescript@5.9.3):
-    resolution: {integrity: sha512-pgIll2W1NVdof37xLeyySW+yfQ4rI+ERGCRwnO3BjVOx42GpYq6jhTyuALK8VKirvJJIvImgfGDA2qwhYVvMuA==}
-    engines: {node: ^20.19 || ^22.12 || >=24.0}
-    peerDependencies:
-      prisma: '*'
-      typescript: '>=5.4.0'
-    peerDependenciesMeta:
-      prisma:
-        optional: true
-      typescript:
-        optional: true
-    dependencies:
-      '@prisma/client-runtime-utils': 7.4.1
-      typescript: 5.9.3
-    dev: false
-
   /@prisma/config@7.4.1:
     resolution: {integrity: sha512-vteSXm8N46bo3FW9MhPGVHAj+KRgrR6TWtlSk6GqToCKjTnOexXdPZyiDyEsfVW38YhqEmVl6w/6iHN8uYVJcw==}
     dependencies:
@@ -9295,6 +9282,16 @@ packages:
       jest-util: 30.2.0
     dev: true
 
+  /express-rate-limit@8.2.1(express@4.22.1):
+    resolution: {integrity: sha512-PCZEIEIxqwhzw4KF0n7QF4QqruVTcF73O5kFKUnGOyjbCCgizBBiFaYpd/fnBLUMPw/BWw9OsiN7GgrNYr7j6g==}
+    engines: {node: '>= 16'}
+    peerDependencies:
+      express: '>= 4.11'
+    dependencies:
+      express: 4.22.1
+      ip-address: 10.0.1
+    dev: false
+
   /express@4.22.1:
     resolution: {integrity: sha512-F2X8g9P1X7uCPZMA3MVf9wcTqlyNp7IhH5qPCI0izhaOIYXaW9L535tGA3qmjRzpH+bZczqq7hVKxTR4NWnu+g==}
     engines: {node: '>= 0.10.0'}
@@ -10271,6 +10268,11 @@ packages:
     dependencies:
       kind-of: 6.0.3
     dev: true
+
+  /ip-address@10.0.1:
+    resolution: {integrity: sha512-NWv9YLW4PoW2B7xtzaS3NCot75m6nK7Icdv0o3lfMceJVRfSoQwqD4wEH5rLwoKJwUiZ/rfpiVBhnaF0FK4HoA==}
+    engines: {node: '>= 12'}
+    dev: false
 
   /ip-regex@4.3.0:
     resolution: {integrity: sha512-B9ZWJxHHOHUhUjCPrMpLD4xEq35bUTClHM1S6CBU5ixQnkZmwipwgc96vAd7AAGM9TGHvJR+Uss+/Ak6UphK+Q==}

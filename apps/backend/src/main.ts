@@ -2,6 +2,7 @@ import 'dotenv/config';
 import * as path from 'path';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import postsRouter from './posts/posts.router';
 import uploadsRouter from './uploads/uploads.router';
 
@@ -12,6 +13,26 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// 글로벌 rate limit: IP당 분당 100회
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 100,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+});
+app.use(globalLimiter);
+
+// unlock 전용 rate limit: IP당 분당 10회 (brute-force 방어)
+const unlockLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+});
+app.use('/posts/:slug/unlock', unlockLimiter);
 
 // 정적 파일 서빙 (라우터보다 먼저 등록 — 파일 없으면 next()로 통과)
 const uploadsDir = path.resolve(__dirname, '../uploads');
