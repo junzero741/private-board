@@ -33,6 +33,7 @@ export default function Page() {
   const [copied, setCopied] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [initialContent, setInitialContent] = useState<string | undefined>(undefined);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(false);
@@ -48,10 +49,13 @@ export default function Page() {
         setInitialContent(draft.content);
         setExpiresIn(draft.expiresIn);
         setSavedAt(draft.savedAt);
+      } else {
+        setInitialContent('');
       }
     } catch {
-      // ignore corrupt data
+      setInitialContent('');
     }
+    setDraftLoaded(true);
     mountedRef.current = true;
   }, []);
 
@@ -203,7 +207,7 @@ export default function Page() {
           <label className="text-sm font-medium text-text-secondary">
             내용
           </label>
-          <Editor onChange={setContent} initialContent={initialContent} />
+          {draftLoaded && <Editor onChange={setContent} initialContent={initialContent} />}
           {savedAt && (
             <p className="text-xs text-text-muted">
               임시저장됨 {formatTime(savedAt)}
