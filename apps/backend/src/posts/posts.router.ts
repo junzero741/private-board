@@ -12,7 +12,7 @@ import { createPost, unlockPost } from './posts.service';
 const router = Router();
 
 router.post(ROUTE_PATTERNS.posts.create, async (
-  req: Request<{}, CreatePostResponse, CreatePostRequest>,
+  req: Request<Record<string, never>, CreatePostResponse, CreatePostRequest>,
   res: Response<CreatePostResponse | { error: string }>,
   next: NextFunction
 ) => {
