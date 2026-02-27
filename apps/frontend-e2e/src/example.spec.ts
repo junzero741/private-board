@@ -110,7 +110,7 @@ test.describe('게시글 페이지 - 비밀번호 인증', () => {
   });
 
   test('잘못된 비밀번호로 제출하면 에러가 표시된다', async ({ page }) => {
-    await page.route('**/posts/some-slug/view', async (route) => {
+    await page.route('**/posts/some-slug/unlock', async (route) => {
       await route.fulfill({ status: 401 });
     });
 
@@ -121,7 +121,7 @@ test.describe('게시글 페이지 - 비밀번호 인증', () => {
   });
 
   test('올바른 비밀번호로 제출하면 게시글이 표시된다', async ({ page }) => {
-    await page.route('**/posts/some-slug/view', async (route) => {
+    await page.route('**/posts/some-slug/unlock', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -137,7 +137,7 @@ test.describe('게시글 페이지 - 비밀번호 인증', () => {
   });
 
   test('존재하지 않는 게시글 접근 시 에러가 표시된다', async ({ page }) => {
-    await page.route('**/posts/nonexistent/view', async (route) => {
+    await page.route('**/posts/nonexistent/unlock', async (route) => {
       await route.fulfill({ status: 404 });
     });
 

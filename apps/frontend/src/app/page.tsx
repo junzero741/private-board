@@ -14,6 +14,7 @@ export default function Page() {
   const [password, setPassword] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [error, setError] = useState('');
+  const [expiresIn, setExpiresIn] = useState<string>('24');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -28,7 +29,12 @@ export default function Page() {
     setLoading(true);
     try {
       const finalContent = await replaceBlobsWithUrls(content);
-      const { slug } = await createPost({ title, content: finalContent, password });
+      const { slug } = await createPost({
+        title,
+        content: finalContent,
+        password,
+        expiresIn: expiresIn === '' ? undefined : Number(expiresIn),
+      });
       setGeneratedUrl(`${window.location.origin}/${slug}`);
       setStep('done');
     } catch (err) {
@@ -67,6 +73,7 @@ export default function Page() {
             setTitle('');
             setContent('');
             setPassword('');
+            setExpiresIn('24');
             setGeneratedUrl('');
           }}
           className="mt-6 text-sm text-gray-500 underline"
@@ -96,6 +103,17 @@ export default function Page() {
           onChange={(e) => setPassword(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 text-sm"
         />
+        <select
+          value={expiresIn}
+          onChange={(e) => setExpiresIn(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-2 text-sm"
+        >
+          <option value="1">1시간 후 만료</option>
+          <option value="24">24시간 후 만료</option>
+          <option value="168">7일 후 만료</option>
+          <option value="720">30일 후 만료</option>
+          <option value="">무제한</option>
+        </select>
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button
           type="submit"

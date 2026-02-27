@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { viewPost } from '../../lib/api';
+import { sanitizeHtml } from '../../lib/sanitize';
 
 type Step = 'auth' | 'view';
 
@@ -35,7 +36,7 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
         <h1 className="text-xl font-semibold mb-8">{post.title}</h1>
         <div
           className="prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
         />
       </main>
     );

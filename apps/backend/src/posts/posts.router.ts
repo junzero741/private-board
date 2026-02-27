@@ -14,14 +14,14 @@ router.post(ROUTE_PATTERNS.posts.create, async (
   req: Request<{}, CreatePostResponse, CreatePostRequest>,
   res: Response<CreatePostResponse | { error: string }>
 ) => {
-  const { title, content, password } = req.body;
+  const { title, content, password, expiresIn } = req.body;
 
   if (!title || !content || !password) {
     res.status(400).json({ error: 'title, content, password are required' });
     return;
   }
 
-  const result = await createPost(title, content, password);
+  const result = await createPost(title, content, password, expiresIn);
   res.status(201).json(result);
 });
 
@@ -45,6 +45,10 @@ router.post(ROUTE_PATTERNS.posts.unlock, async (
     }
     res.json(post);
   } catch (err: unknown) {
+    if (err instanceof Error && err.message === 'EXPIRED') {
+      res.status(410).json({ error: 'This post has expired' });
+      return;
+    }
     if (err instanceof Error && err.message === 'WRONG_PASSWORD') {
       res.status(401).json({ error: 'Invalid password' });
       return;

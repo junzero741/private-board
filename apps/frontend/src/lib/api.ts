@@ -30,6 +30,7 @@ export async function viewPost(slug: string, data: UnlockPostRequest): Promise<U
 
   if (res.status === 401) throw new Error('비밀번호가 올바르지 않습니다.');
   if (res.status === 404) throw new Error('존재하지 않는 게시글입니다.');
+  if (res.status === 410) throw new Error('만료된 게시글입니다.');
   if (!res.ok) throw new Error('오류가 발생했습니다.');
   return res.json();
 }

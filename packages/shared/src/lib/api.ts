@@ -25,6 +25,7 @@ export interface CreatePostRequest {
   title: string;
   content: string;
   password: string;
+  expiresIn?: number; // 만료 시간 (시간 단위, null이면 무제한)
 }
 
 export interface CreatePostResponse {
