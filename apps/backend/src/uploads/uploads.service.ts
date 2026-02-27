@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { getStorage } from '../lib/storage';
+import { AppError } from '../lib/errors';
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -20,7 +21,7 @@ export async function uploadImage(
   mimeType: string
 ): Promise<{ url: string }> {
   if (!ALLOWED_MIME_TYPES.has(mimeType)) {
-    throw new Error('INVALID_MIME_TYPE');
+    throw new AppError(400, 'Only jpeg, png, gif, webp images are allowed', 'INVALID_MIME_TYPE');
   }
 
   const ext = MIME_TO_EXT[mimeType];

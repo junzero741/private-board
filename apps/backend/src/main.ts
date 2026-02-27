@@ -3,6 +3,7 @@ import * as path from 'path';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import { AppError } from './lib/errors';
 import postsRouter from './posts/posts.router';
 import uploadsRouter from './uploads/uploads.router';
 
@@ -42,6 +43,10 @@ app.use('/posts', postsRouter);
 app.use('/uploads', uploadsRouter);
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({ error: err.message, code: err.code });
+    return;
+  }
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });
 });

@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { AppError } from '../lib/errors';
 import { createPost, unlockPost } from './posts.service';
 
 // Mock prisma
@@ -106,7 +107,11 @@ describe('posts.service', () => {
         expiresAt: null,
       });
 
-      await expect(unlockPost('abc', 'wrong')).rejects.toThrow('WRONG_PASSWORD');
+      await expect(unlockPost('abc', 'wrong')).rejects.toThrow(AppError);
+      await expect(unlockPost('abc', 'wrong')).rejects.toMatchObject({
+        statusCode: 401,
+        code: 'WRONG_PASSWORD',
+      });
     });
 
     it('should throw EXPIRED for an expired post', async () => {
@@ -119,7 +124,11 @@ describe('posts.service', () => {
         expiresAt: new Date(Date.now() - 1000), // 1 second ago
       });
 
-      await expect(unlockPost('abc', 'pass')).rejects.toThrow('EXPIRED');
+      await expect(unlockPost('abc', 'pass')).rejects.toThrow(AppError);
+      await expect(unlockPost('abc', 'pass')).rejects.toMatchObject({
+        statusCode: 410,
+        code: 'EXPIRED',
+      });
     });
 
     it('should succeed for a post that has not expired yet', async () => {

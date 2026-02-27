@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { ROUTE_PATTERNS, UploadImageResponse } from '@private-board/shared';
+import { AppError } from '../lib/errors';
 import { uploadImage } from './uploads.service';
 
 const upload = multer({
@@ -20,19 +21,12 @@ router.post(
   ) => {
     try {
       if (!req.file) {
-        res.status(400).json({ error: 'file is required' });
-        return;
+        throw new AppError(400, 'file is required', 'VALIDATION_ERROR');
       }
 
       const result = await uploadImage(req.file.buffer, req.file.mimetype);
       res.status(201).json(result);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === 'INVALID_MIME_TYPE') {
-        res
-          .status(400)
-          .json({ error: 'Only jpeg, png, gif, webp images are allowed' });
-        return;
-      }
+    } catch (err) {
       next(err);
     }
   }

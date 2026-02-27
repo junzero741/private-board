@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import prisma from '../lib/prisma';
+import { AppError } from '../lib/errors';
 
 export async function createPost(
   title: string,
@@ -29,11 +30,11 @@ export async function unlockPost(
   if (!post) return null;
 
   if (post.expiresAt && post.expiresAt < new Date()) {
-    throw new Error('EXPIRED');
+    throw new AppError(410, 'This post has expired', 'EXPIRED');
   }
 
   const match = await bcrypt.compare(password, post.passwordHash);
-  if (!match) throw new Error('WRONG_PASSWORD');
+  if (!match) throw new AppError(401, 'Invalid password', 'WRONG_PASSWORD');
 
   return { title: post.title, content: post.content };
 }
