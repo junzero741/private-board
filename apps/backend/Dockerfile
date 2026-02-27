@@ -29,6 +29,8 @@ RUN pnpm nx prune backend
 # --- Production stage ---
 FROM node:20-slim
 
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@8.15.5 --activate
