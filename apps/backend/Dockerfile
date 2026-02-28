@@ -26,9 +26,6 @@ RUN pnpm nx build backend
 # Prune lockfile + copy workspace modules for production install
 RUN pnpm nx prune backend
 
-# Compile prisma.config.ts to JS for production (no ts-node needed)
-RUN npx tsc apps/backend/prisma.config.ts --module commonjs --esModuleInterop --outDir /tmp/prisma-config
-
 # --- Production stage ---
 FROM node:20-slim
 
@@ -44,9 +41,11 @@ COPY --from=builder /app/dist/apps/backend ./
 # Install production dependencies only
 RUN pnpm install --prod --frozen-lockfile
 
-# Copy Prisma schema + compiled config for runtime migrate
+# Copy Prisma schema + migrations for runtime migrate
 COPY --from=builder /app/apps/backend/prisma ./prisma
-COPY --from=builder /tmp/prisma-config/apps/backend/prisma.config.js ./
+
+# Create prisma.config.js for production (reads DATABASE_URL from env)
+RUN echo 'const { defineConfig } = require("prisma/config"); module.exports = defineConfig({ schema: "prisma/schema.prisma", migrations: { path: "prisma/migrations" }, datasource: { url: process.env.DATABASE_URL } });' > prisma.config.js
 
 EXPOSE 4000
 
