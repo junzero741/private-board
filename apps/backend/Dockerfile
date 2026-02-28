@@ -33,13 +33,11 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@8.15.5 --activate
-
-# Copy build output (includes generated package.json + lockfile)
+# Copy build output (package.json + compiled code)
 COPY --from=builder /app/dist/apps/backend ./
 
 # Install production dependencies only
-RUN pnpm install --prod
+RUN npm install --omit=dev
 
 # Copy Prisma schema + migrations for runtime migrate
 COPY --from=builder /app/apps/backend/prisma ./prisma
