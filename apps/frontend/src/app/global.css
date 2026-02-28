@@ -36,8 +36,22 @@
   /* Transition */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
+  /* Animation */
+  --animate-toast-in: toast-in 0.3s var(--ease-out-expo);
+
   /* Font */
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @layer base {
