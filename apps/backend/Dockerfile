@@ -39,7 +39,7 @@ RUN corepack enable && corepack prepare pnpm@8.15.5 --activate
 COPY --from=builder /app/dist/apps/backend ./
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod
 
 # Copy Prisma schema + migrations for runtime migrate
 COPY --from=builder /app/apps/backend/prisma ./prisma
