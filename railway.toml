@@ -2,5 +2,5 @@
 dockerfilePath = "apps/backend/Dockerfile"
 
 [deploy]
-startCommand = "echo '--- migrate ---' && npx prisma migrate deploy && echo '--- starting node ---' && ls main.js && node main.js"
+startCommand = "npx prisma migrate deploy --schema=prisma/schema.prisma && node main.js"
 restartPolicyType = "ON_FAILURE"
