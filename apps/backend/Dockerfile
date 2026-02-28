@@ -1,4 +1,4 @@
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN pnpm nx build backend
 RUN pnpm nx prune backend
 
 # --- Production stage ---
-FROM node:20-slim
+FROM node:22-slim
 
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
