@@ -47,6 +47,9 @@ COPY --from=builder /app/apps/backend/prisma ./prisma
 # Create prisma.config.js for production (reads DATABASE_URL from env)
 RUN echo 'const { defineConfig } = require("prisma/config"); module.exports = defineConfig({ schema: "prisma/schema.prisma", migrations: { path: "prisma/migrations" }, datasource: { url: process.env.DATABASE_URL } });' > prisma.config.js
 
+COPY --from=builder /app/apps/backend/start.sh ./
+RUN chmod +x start.sh
+
 EXPOSE 4000
 
-CMD ["node", "main.js"]
+CMD ["./start.sh"]
