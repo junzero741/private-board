@@ -21,10 +21,8 @@ COPY packages/shared/ ./packages/shared/
 RUN cd apps/backend && npx prisma generate
 
 # Build backend (includes shared)
+# generatePackageJson in esbuild creates the correct runtime package.json
 RUN pnpm nx build backend
-
-# Prune lockfile + copy workspace modules for production install
-RUN pnpm nx prune backend
 
 # --- Production stage ---
 FROM node:22-slim
