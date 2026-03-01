@@ -44,12 +44,12 @@ export class R2StorageProvider implements StorageProvider {
       throw new Error(`R2 storage missing env vars: ${missing.join(', ')}`);
     }
 
-    this.bucket = bucket;
-    this.publicUrl = publicUrl.replace(/\/$/, '');
+    this.bucket = bucket!;
+    this.publicUrl = publicUrl!.replace(/\/$/, '');
     this.client = new S3Client({
       region: 'auto',
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: { accessKeyId, secretAccessKey },
+      credentials: { accessKeyId: accessKeyId!, secretAccessKey: secretAccessKey! },
     });
   }
 
