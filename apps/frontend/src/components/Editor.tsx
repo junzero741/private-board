@@ -7,6 +7,16 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { TextStyle, FontSize } from '@tiptap/extension-text-style';
 import { useRef, useState, useCallback } from 'react';
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function isImageTooLarge(file: File | Blob): boolean {
+  if (file.size > MAX_IMAGE_SIZE) {
+    alert('이미지 크기는 5MB 이하만 가능합니다.');
+    return true;
+  }
+  return false;
+}
+
 interface EditorProps {
   onChange: (html: string) => void;
   initialContent?: string;
@@ -69,6 +79,7 @@ export default function Editor({ onChange, initialContent }: EditorProps) {
         if (!imageFile) return false;
 
         event.preventDefault();
+        if (isImageTooLarge(imageFile)) return true;
         const blobUrl = URL.createObjectURL(imageFile);
         const { schema } = view.state;
         const node = schema.nodes.image.create({ src: blobUrl });
@@ -89,6 +100,7 @@ export default function Editor({ onChange, initialContent }: EditorProps) {
         event.preventDefault();
         const file = imageItem.getAsFile();
         if (!file) return false;
+        if (isImageTooLarge(file)) return true;
 
         const blobUrl = URL.createObjectURL(file);
         const { schema } = view.state;
@@ -103,6 +115,7 @@ export default function Editor({ onChange, initialContent }: EditorProps) {
   function handleImageInsert(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !editor) return;
+    if (isImageTooLarge(file)) return;
 
     const blobUrl = URL.createObjectURL(file);
     editor.chain().focus().setImage({ src: blobUrl }).run();
