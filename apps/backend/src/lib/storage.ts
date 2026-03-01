@@ -37,8 +37,11 @@ export class R2StorageProvider implements StorageProvider {
     const bucket = process.env.R2_BUCKET_NAME;
     const publicUrl = process.env.R2_PUBLIC_URL;
 
-    if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !publicUrl) {
-      throw new Error('R2 storage requires R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL');
+    const missing = Object.entries({ R2_ACCOUNT_ID: accountId, R2_ACCESS_KEY_ID: accessKeyId, R2_SECRET_ACCESS_KEY: secretAccessKey, R2_BUCKET_NAME: bucket, R2_PUBLIC_URL: publicUrl })
+      .filter(([, v]) => !v)
+      .map(([k]) => k);
+    if (missing.length > 0) {
+      throw new Error(`R2 storage missing env vars: ${missing.join(', ')}`);
     }
 
     this.bucket = bucket;
