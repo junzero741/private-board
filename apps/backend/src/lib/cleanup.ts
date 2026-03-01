@@ -3,7 +3,7 @@ import { getStorage } from './storage';
 
 const IMAGE_FILENAME_RE = /(?:\/uploads\/|\.r2\.dev\/|\.cloudflare\.com\/[^/]+\/)([a-zA-Z0-9_-]+\.\w+)/g;
 
-function extractImageFilenames(html: string): string[] {
+export function extractImageFilenames(html: string): string[] {
   const filenames: string[] = [];
   let match: RegExpExecArray | null;
   while ((match = IMAGE_FILENAME_RE.exec(html)) !== null) {
