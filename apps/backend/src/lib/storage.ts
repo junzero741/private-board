@@ -1,9 +1,10 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 export interface StorageProvider {
   save(buffer: Buffer, filename: string, mimeType: string): Promise<string>;
+  delete(filename: string): Promise<void>;
 }
 
 export class LocalStorageProvider implements StorageProvider {
@@ -22,6 +23,11 @@ export class LocalStorageProvider implements StorageProvider {
     const filePath = path.join(this.uploadDir, filename);
     await fs.writeFile(filePath, buffer);
     return `${this.baseUrl}/${filename}`;
+  }
+
+  async delete(filename: string): Promise<void> {
+    const filePath = path.join(this.uploadDir, filename);
+    await fs.unlink(filePath);
   }
 }
 
@@ -63,6 +69,15 @@ export class R2StorageProvider implements StorageProvider {
       })
     );
     return `${this.publicUrl}/${filename}`;
+  }
+
+  async delete(filename: string): Promise<void> {
+    await this.client.send(
+      new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: filename,
+      })
+    );
   }
 }
 

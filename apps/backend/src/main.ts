@@ -4,6 +4,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { AppError } from './lib/errors';
+import { cleanupExpiredPosts } from './lib/cleanup';
 import postsRouter from './posts/posts.router';
 import uploadsRouter from './uploads/uploads.router';
 
@@ -54,4 +55,8 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 
 app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);
+
+  // 만료 게시글 정리: 서버 시작 직후 1회 실행 + 1시간 간격
+  cleanupExpiredPosts();
+  setInterval(cleanupExpiredPosts, 60 * 60 * 1000);
 });
