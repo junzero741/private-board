@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import {
   ROUTE_PATTERNS,
+  FEATURE_FLAGS,
+  MAX_EXPIRES_HOURS,
   CreatePostRequest,
   CreatePostResponse,
   UnlockPostRequest,
@@ -23,7 +25,14 @@ router.post(ROUTE_PATTERNS.posts.create, async (
       throw new AppError(400, 'title, content, password are required', 'VALIDATION_ERROR');
     }
 
-    const result = await createPost(title, content, password, expiresIn);
+    let finalExpiresIn = expiresIn;
+    if (!FEATURE_FLAGS.allowUnlimitedExpiry) {
+      finalExpiresIn = (finalExpiresIn != null && finalExpiresIn > 0)
+        ? Math.min(finalExpiresIn, MAX_EXPIRES_HOURS)
+        : MAX_EXPIRES_HOURS;
+    }
+
+    const result = await createPost(title, content, password, finalExpiresIn);
     res.status(201).json(result);
   } catch (err) {
     next(err);

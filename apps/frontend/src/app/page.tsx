@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Editor from '../components/Editor';
 import { createPost } from '../lib/api';
 import { replaceBlobsWithUrls } from '../lib/image';
+import { FEATURE_FLAGS } from '@private-board/shared';
 
 type Step = 'write' | 'done';
 
@@ -47,7 +48,9 @@ export default function Page() {
         setTitle(draft.title);
         setContent(draft.content);
         setInitialContent(draft.content);
-        setExpiresIn(draft.expiresIn);
+        setExpiresIn(
+          !FEATURE_FLAGS.allowUnlimitedExpiry && draft.expiresIn === '' ? '24' : draft.expiresIn
+        );
         setSavedAt(draft.savedAt);
       } else {
         setInitialContent('');
@@ -254,7 +257,9 @@ export default function Page() {
                 <option value="24">24시간 후 만료</option>
                 <option value="168">7일 후 만료</option>
                 <option value="720">30일 후 만료</option>
-                <option value="">무제한</option>
+                {FEATURE_FLAGS.allowUnlimitedExpiry && (
+                  <option value="">무제한</option>
+                )}
               </select>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted">
                 <polyline points="6 9 12 15 18 9" />
