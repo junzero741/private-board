@@ -20,6 +20,8 @@ COPY packages/shared/ ./packages/shared/
 # NEXT_PUBLIC_ vars are inlined at build time
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_GTM_ID
+ENV NEXT_PUBLIC_GTM_ID=$NEXT_PUBLIC_GTM_ID
 
 # Build frontend (includes shared via dependsOn)
 RUN pnpm nx build frontend

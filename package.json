@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.999.0",
+    "@next/third-parties": "^16.1.6",
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",
     "@tailwindcss/typography": "^0.5.19",
