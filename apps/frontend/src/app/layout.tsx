@@ -1,14 +1,41 @@
 import './global.css';
 import { Inter } from 'next/font/google';
+import type { Metadata } from 'next';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
 });
 
-export const metadata = {
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  'https://frontend-production-7340.up.railway.app';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: '님보',
   description: '비밀번호로 보호된 문서를 안전하게 공유하세요.',
+  openGraph: {
+    title: '님보',
+    description: '비밀번호로 보호된 문서를 안전하게 공유하세요.',
+    siteName: '님보',
+    type: 'website',
+    locale: 'ko_KR',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: '님보' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '님보',
+    description: '비밀번호로 보호된 문서를 안전하게 공유하세요.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export default function RootLayout({
