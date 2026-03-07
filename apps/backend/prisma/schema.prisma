@@ -22,4 +22,30 @@ model Post {
   expiresAt    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  reports      Report[]
+}
+
+model Report {
+  id          String       @id @default(uuid())
+  post        Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId      String
+  reason      ReportReason
+  description String?
+  reporterIp  String
+  status      ReportStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+}
+
+enum ReportReason {
+  ILLEGAL_CONTENT
+  DEFAMATION
+  PERSONAL_INFO
+  PHISHING
+  COPYRIGHT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  DISMISSED
 }
