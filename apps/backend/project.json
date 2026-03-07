@@ -12,7 +12,7 @@
         "platform": "node",
         "outputPath": "dist/apps/backend",
         "format": ["cjs"],
-        "bundle": false,
+        "bundle": true,
         "main": "apps/backend/src/main.ts",
         "tsConfig": "apps/backend/tsconfig.app.json",
         "assets": ["apps/backend/src/assets"],
