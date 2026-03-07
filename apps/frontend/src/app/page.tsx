@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Editor from '../components/Editor';
-import { createPost } from '../lib/api';
-import { replaceBlobsWithUrls } from '../lib/image';
+import Editor from '@/components/Editor';
+import { createPost } from '@/lib/api';
+import { replaceBlobsWithUrls } from '@/lib/image';
 import { FEATURE_FLAGS } from '@private-board/shared';
 
 type Step = 'write' | 'done';

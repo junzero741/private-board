@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { viewPost } from '../../lib/api';
-import { sanitizeHtml } from '../../lib/sanitize';
+import { viewPost } from '@/lib/api';
+import { sanitizeHtml } from '@/lib/sanitize';
+import ReportModal from '@/components/ReportModal';
 
 type Step = 'auth' | 'view';
 
@@ -12,6 +13,7 @@ export default function PostUnlock({ slug }: { slug: string }) {
   const [post, setPost] = useState<{ title: string; content: string } | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +40,19 @@ export default function PostUnlock({ slug }: { slug: string }) {
           className="prose prose-slate max-w-none prose-headings:text-text-primary prose-p:text-text-primary prose-a:text-brand-600 prose-strong:text-text-primary prose-img:rounded-lg"
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
         />
+        <div className="mt-12 flex justify-end">
+          <button
+            onClick={() => setReportOpen(true)}
+            className="flex items-center gap-1.5 text-xs text-text-secondary hover:text-error transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+              <line x1="4" x2="4" y1="22" y2="15" />
+            </svg>
+            신고하기
+          </button>
+        </div>
+        {reportOpen && <ReportModal slug={slug} onClose={() => setReportOpen(false)} />}
       </section>
     );
   }
