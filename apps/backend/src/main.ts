@@ -7,6 +7,8 @@ import { AppError } from './lib/errors';
 import { cleanupExpiredPosts } from './lib/cleanup';
 import postsRouter from './posts/posts.router';
 import uploadsRouter from './uploads/uploads.router';
+import reportsRouter from './reports/reports.router';
+import adminRouter from './admin/admin.router';
 
 const host = process.env.HOST ?? '0.0.0.0';
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
@@ -43,6 +45,8 @@ app.use('/uploads', express.static(uploadsDir));
 
 app.use('/posts', postsRouter);
 app.use('/uploads', uploadsRouter);
+app.use('/posts', reportsRouter);
+app.use('/admin', adminRouter);
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof AppError) {
