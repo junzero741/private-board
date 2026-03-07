@@ -8,6 +8,7 @@ const { composePlugins, withNx } = require('@nx/next');
  **/
 const nextConfig = {
   output: 'standalone',
+  transpilePackages: ['@private-board/shared'],
   nx: {},
 };
 

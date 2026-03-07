@@ -12,11 +12,7 @@
     "lib": ["ES2021", "dom"],
     "strict": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@private-board/shared": ["packages/shared/src/index.ts"],
-      "shared": ["packages/shared/src/index.ts"]
-    }
+    "baseUrl": "."
   },
   "exclude": ["node_modules", "tmp"]
 }
