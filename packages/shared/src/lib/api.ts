@@ -3,9 +3,15 @@ export const API_ROUTES = {
   posts: {
     create: '/posts',
     unlock: (slug: string) => `/posts/${slug}/unlock`,
+    report: (slug: string) => `/posts/${slug}/report`,
   },
   uploads: {
     image: '/uploads/image',
+  },
+  admin: {
+    reports: '/admin/reports',
+    deletePost: (slug: string) => `/admin/posts/${slug}`,
+    dismissReport: (id: string) => `/admin/reports/${id}/dismiss`,
   },
 } as const;
 
@@ -14,11 +20,33 @@ export const ROUTE_PATTERNS = {
   posts: {
     create: '/',
     unlock: '/:slug/unlock',
+    report: '/:slug/report',
   },
   uploads: {
     image: '/image',
   },
+  admin: {
+    reports: '/reports',
+    deletePost: '/posts/:slug',
+    dismissReport: '/reports/:id/dismiss',
+  },
 } as const;
+
+// 신고
+export type ReportReason =
+  | 'ILLEGAL_CONTENT'
+  | 'DEFAMATION'
+  | 'PERSONAL_INFO'
+  | 'PHISHING'
+  | 'COPYRIGHT'
+  | 'OTHER';
+
+
+export interface CreateReportRequest {
+  slug: string;
+  reason: ReportReason;
+  description?: string;
+}
 
 // 게시글 생성
 export interface CreatePostRequest {
