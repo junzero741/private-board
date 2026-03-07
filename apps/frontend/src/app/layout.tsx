@@ -74,10 +74,13 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
 
         <footer className="border-t border-border">
-          <div className="mx-auto max-w-3xl px-4 py-4">
+          <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
             <p className="text-sm text-text-muted">
               비밀번호로 보호된 문서를 안전하게 공유하세요.
             </p>
+            <a href="/terms" className="text-sm text-text-muted hover:text-text-secondary">
+              이용약관
+            </a>
           </div>
         </footer>
 
