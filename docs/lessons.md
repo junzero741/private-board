@@ -99,3 +99,55 @@
 2. **새 서비스 배포 시 빌드 로그를 반드시 확인한다.**
    - 잘못된 Dockerfile로 빌드되면 빌드 자체는 성공하지만 런타임에 실패한다.
    - 빌드 단계 이름(COPY, RUN 등)을 읽어 의도한 Dockerfile이 실행되는지 검증한다.
+
+---
+
+## [2026-03-07] TypeScript tsconfig `paths`는 `extends`해도 머지되지 않는다
+
+**사건**: `apps/frontend/tsconfig.json`에 `@/*` alias를 추가하기 위해 `paths`를 선언했더니, `tsconfig.base.json`에 있던 `@private-board/shared` 경로가 사라져 빌드 실패.
+
+**근본 원인**: TypeScript의 `extends`는 `paths`를 deep merge하지 않는다. 자식 tsconfig에서 `paths`를 선언하면 부모의 `paths` 전체가 덮어써진다.
+
+**교훈**:
+
+1. **자식 tsconfig에서 `paths`를 추가할 때는 부모의 `paths`도 함께 선언해야 한다.**
+   - 또는 부모 `paths`에 의존하지 않는 구조를 만든다 (pnpm workspace symlink, `transpilePackages` 등).
+
+2. **`paths`가 실제로 필요한지 먼저 확인한다.**
+   - pnpm workspace로 패키지가 `node_modules`에 심링크되어 있으면 `paths` 없이도 TypeScript가 찾을 수 있다.
+
+---
+
+## [2026-03-07] shared 패키지를 UI 전용 상수의 거처로 오해
+
+**사건**: `REPORT_REASON_LABELS` (한국어 표시용 매핑)을 `packages/shared`에 선언했다가 프론트엔드로 옮김.
+
+**근본 원인**: `ReportReason` 타입이 shared에 있으니 관련 상수도 shared에 두는 게 맞다는 잘못된 판단. shared의 목적을 혼동.
+
+**교훈**:
+
+1. **`packages/shared`에는 프론트엔드와 백엔드가 실제로 둘 다 사용하는 것만 둔다.**
+   - 타입, API 경로, 요청/응답 인터페이스 등.
+   - UI 표시용 텍스트, 스타일 관련 상수 등 프론트 전용 코드는 shared에 두지 않는다.
+
+2. **"같은 도메인"이라고 같은 패키지에 두는 게 아니다. "같은 소비자"일 때만 공유한다.**
+
+---
+
+## [2026-03-07] esbuild `bundle: false`에서 workspace 패키지가 런타임에 누락
+
+**사건**: Railway 배포 후 `Cannot find module '@private-board/shared'` 에러로 백엔드 크래시. 로컬 빌드는 정상.
+
+**근본 원인**: esbuild `bundle: false`는 각 파일을 독립적으로 트랜스파일만 하고 import를 따라가지 않는다. `require('@private-board/shared')`가 output JS에 그대로 남지만, `generatePackageJson`은 이 패키지를 의존성에 포함시키지 않는다. Docker 프로덕션 이미지에서 `npm install` 후 이 패키지가 없어 런타임 크래시.
+
+**수정**: `bundle: true` + `tsconfig.base.json`에 `paths` 복원. esbuild가 tsconfig path를 로컬 파일로 인식해 shared 코드를 번들에 인라인으로 포함.
+
+**교훈**:
+
+1. **esbuild `bundle: false`는 "트랜스파일만" 한다. 모듈 해석이 없다.**
+   - workspace 패키지처럼 `node_modules`에 없는 의존성은 런타임에 반드시 깨진다.
+   - Docker 배포 시 생성된 `dist/package.json`에 모든 런타임 의존성이 있는지 확인한다.
+
+2. **workspace 패키지를 번들에 포함시키려면 `bundle: true` + tsconfig `paths`를 함께 써야 한다.**
+   - tsconfig `paths`로 로컬 파일을 가리키면 esbuild가 external 처리 없이 번들에 포함시킨다.
+   - `node_modules`에 심링크로 존재하는 경우, esbuild의 `externalDependencies: 'all'`(기본값)이 자동으로 external 처리해버리므로 주의.
