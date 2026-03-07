@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ReportReason } from '@private-board/shared';
 import { REPORT_REASON_LABELS } from '@/lib/constants';
 import { AdminReport, getAdminReports, adminDeletePost, adminDismissReport } from '@/lib/api';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 export default function AdminPage() {
   const [secret, setSecret] = useState('');
@@ -147,6 +148,11 @@ export default function AdminPage() {
                 {REPORT_REASON_LABELS[report.reason]}
               </span>
             </div>
+
+            <article
+              className="mb-3 max-h-48 overflow-y-auto rounded-lg bg-surface p-3 prose prose-sm prose-slate max-w-none prose-headings:text-text-primary prose-p:text-text-primary prose-img:rounded"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(report.post.content) }}
+            />
 
             {report.description && (
               <p className="mb-3 text-sm text-text-secondary">{report.description}</p>

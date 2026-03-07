@@ -39,6 +39,26 @@ const unlockLimiter = rateLimit({
 });
 app.use('/posts/:slug/unlock', unlockLimiter);
 
+// 이미지 업로드 rate limit: IP당 시간당 20회 (스토리지 어뷰징 방어)
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 20,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+});
+app.use('/uploads/image', uploadLimiter);
+
+// admin rate limit: IP당 15분당 20회 (brute-force 방어)
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+});
+app.use('/admin', adminLimiter);
+
 // 정적 파일 서빙 (라우터보다 먼저 등록 — 파일 없으면 next()로 통과)
 const uploadsDir = path.resolve(__dirname, '../uploads');
 app.use('/uploads', express.static(uploadsDir));
