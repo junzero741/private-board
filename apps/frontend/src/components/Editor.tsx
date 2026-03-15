@@ -17,8 +17,13 @@ function isImageTooLarge(file: File | Blob): boolean {
   return false;
 }
 
+function generateKey(): string {
+  return 'img-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
 interface EditorProps {
   onChange: (html: string) => void;
+  onImagesChange?: (images: Record<string, Blob>) => void;
   initialContent?: string;
 }
 
@@ -53,9 +58,30 @@ function ToolbarDivider() {
   return <div className="mx-1 h-5 w-px bg-border" />;
 }
 
-export default function Editor({ onChange, initialContent }: EditorProps) {
+export default function Editor({ onChange, onImagesChange, initialContent }: EditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // Map from blob URL → idb key
+  const blobUrlToKey = useRef<Map<string, string>>(new Map());
+  // Map from idb key → Blob (accumulated)
+  const imageBlobs = useRef<Record<string, Blob>>({});
+
+  function registerImage(blobUrl: string, blob: Blob): void {
+    const key = generateKey();
+    blobUrlToKey.current.set(blobUrl, key);
+    imageBlobs.current = { ...imageBlobs.current, [key]: blob };
+    onImagesChange?.(imageBlobs.current);
+  }
+
+  function replaceBlobsWithKeys(html: string): string {
+    let result = html;
+    for (const [blobUrl, key] of blobUrlToKey.current.entries()) {
+      // Need to escape special regex chars in blob URL
+      result = result.split(blobUrl).join(`idb://${key}`);
+    }
+    return result;
+  }
 
   const editor = useEditor({
     extensions: [
@@ -68,7 +94,9 @@ export default function Editor({ onChange, initialContent }: EditorProps) {
     content: initialContent || '',
     immediatelyRender: false,
     onUpdate({ editor }) {
-      onChange(editor.getHTML());
+      const rawHtml = editor.getHTML();
+      const converted = replaceBlobsWithKeys(rawHtml);
+      onChange(converted);
     },
     editorProps: {
       handleDrop(view, event) {
@@ -81,6 +109,7 @@ export default function Editor({ onChange, initialContent }: EditorProps) {
         event.preventDefault();
         if (isImageTooLarge(imageFile)) return true;
         const blobUrl = URL.createObjectURL(imageFile);
+        registerImage(blobUrl, imageFile);
         const { schema } = view.state;
         const node = schema.nodes.image.create({ src: blobUrl });
         const pos = view.posAtCoords({ left: event.clientX, top: event.clientY });
@@ -103,6 +132,7 @@ export default function Editor({ onChange, initialContent }: EditorProps) {
         if (isImageTooLarge(file)) return true;
 
         const blobUrl = URL.createObjectURL(file);
+        registerImage(blobUrl, file);
         const { schema } = view.state;
         const node = schema.nodes.image.create({ src: blobUrl });
         const tr = view.state.tr.replaceSelectionWith(node);
@@ -118,6 +148,7 @@ export default function Editor({ onChange, initialContent }: EditorProps) {
     if (isImageTooLarge(file)) return;
 
     const blobUrl = URL.createObjectURL(file);
+    registerImage(blobUrl, file);
     editor.chain().focus().setImage({ src: blobUrl }).run();
     e.target.value = '';
   }

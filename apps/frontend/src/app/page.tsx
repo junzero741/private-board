@@ -4,18 +4,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Editor from '@/components/Editor';
 import { createPost } from '@/lib/api';
 import { replaceBlobsWithUrls } from '@/lib/image';
+import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStore';
 import { FEATURE_FLAGS } from '@private-board/shared';
 
 type Step = 'write' | 'done';
 
-const DRAFT_KEY = 'private-board-draft';
-
-interface Draft {
-  title: string;
-  content: string;
-  expiresIn: string;
-  savedAt: string;
-}
+const LEGACY_DRAFT_KEY = 'private-board-draft';
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -31,66 +25,90 @@ export default function Page() {
   const [error, setError] = useState('');
   const [expiresIn, setExpiresIn] = useState<string>('24');
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [initialContent, setInitialContent] = useState<string | undefined>(undefined);
   const [draftLoaded, setDraftLoaded] = useState(false);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mountedRef = useRef(false);
+  // Images accumulated from Editor (key → Blob)
+  const imagesRef = useRef<Record<string, Blob>>({});
 
   // Restore draft on mount
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) {
-        const draft: Draft = JSON.parse(raw);
-        setTitle(draft.title);
-        setContent(draft.content);
-        setInitialContent(draft.content);
-        setExpiresIn(
-          !FEATURE_FLAGS.allowUnlimitedExpiry && draft.expiresIn === '' ? '24' : draft.expiresIn
-        );
-        setSavedAt(draft.savedAt);
-      } else {
+    async function restore() {
+      try {
+        const draft = await loadDraft();
+        if (draft) {
+          setTitle(draft.title);
+          setExpiresIn(
+            !FEATURE_FLAGS.allowUnlimitedExpiry && draft.expiresIn === '' ? '24' : draft.expiresIn
+          );
+          setSavedAt(draft.savedAt);
+
+          // Replace idb:// refs with blob URLs so Editor can display them
+          let restoredHtml = draft.content;
+          const blobMap: Record<string, string> = {}; // key → blobUrl
+
+          for (const [key, blob] of Object.entries(draft.images)) {
+            const blobUrl = URL.createObjectURL(blob);
+            blobMap[key] = blobUrl;
+            restoredHtml = restoredHtml.split(`idb://${key}`).join(blobUrl);
+          }
+
+          // Seed imagesRef so manual save / submit can work
+          imagesRef.current = draft.images;
+
+          setContent(restoredHtml);
+          setInitialContent(restoredHtml);
+        } else {
+          // Check for legacy localStorage draft (text-only migration)
+          try {
+            const raw = localStorage.getItem(LEGACY_DRAFT_KEY);
+            if (raw) {
+              const legacy = JSON.parse(raw);
+              setTitle(legacy.title ?? '');
+              setExpiresIn(
+                !FEATURE_FLAGS.allowUnlimitedExpiry && legacy.expiresIn === '' ? '24' : (legacy.expiresIn ?? '24')
+              );
+              setInitialContent(legacy.content ?? '');
+              localStorage.removeItem(LEGACY_DRAFT_KEY);
+            } else {
+              setInitialContent('');
+            }
+          } catch {
+            setInitialContent('');
+          }
+        }
+      } catch {
         setInitialContent('');
       }
-    } catch {
-      setInitialContent('');
+      setDraftLoaded(true);
     }
-    setDraftLoaded(true);
-    mountedRef.current = true;
+
+    restore();
   }, []);
 
-  // Auto-save with 1s debounce
-  const saveDraft = useCallback(() => {
-    if (!mountedRef.current) return;
-    const draft: Draft = {
-      title,
-      content,
-      expiresIn,
-      savedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    setSavedAt(draft.savedAt);
-  }, [title, content, expiresIn]);
+  const handleImagesChange = useCallback((images: Record<string, Blob>) => {
+    imagesRef.current = images;
+  }, []);
 
-  useEffect(() => {
-    if (!mountedRef.current) return;
-    // Don't save empty drafts
-    if (!title && (!content || content === '<p></p>')) return;
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(saveDraft, 1000);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [title, content, expiresIn, saveDraft]);
-
-  function clearDraft() {
-    localStorage.removeItem(DRAFT_KEY);
-    setSavedAt(null);
+  async function handleSaveDraft() {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const now = new Date().toISOString();
+      await saveDraft({
+        title,
+        content,
+        expiresIn,
+        savedAt: now,
+        images: imagesRef.current,
+      });
+      setSavedAt(now);
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -103,14 +121,14 @@ export default function Page() {
 
     setLoading(true);
     try {
-      const finalContent = await replaceBlobsWithUrls(content);
+      const finalContent = await replaceBlobsWithUrls(content, imagesRef.current);
       const { slug } = await createPost({
         title,
         content: finalContent,
         password,
         expiresIn: expiresIn === '' ? undefined : Number(expiresIn),
       });
-      clearDraft();
+      await clearDraft();
       setGeneratedUrl(`${window.location.origin}/${slug}`);
       setStep('done');
     } catch (err) {
@@ -164,8 +182,8 @@ export default function Page() {
           </div>
 
           <button
-            onClick={() => {
-              clearDraft();
+            onClick={async () => {
+              await clearDraft();
               setStep('write');
               setTitle('');
               setContent('');
@@ -173,6 +191,8 @@ export default function Page() {
               setExpiresIn('24');
               setGeneratedUrl('');
               setInitialContent('');
+              imagesRef.current = {};
+              setSavedAt(null);
             }}
             className="mt-6 text-sm text-brand-600 hover:text-brand-700 font-medium"
           >
@@ -210,12 +230,28 @@ export default function Page() {
           <label className="text-sm font-medium text-text-secondary">
             내용
           </label>
-          {draftLoaded && <Editor onChange={setContent} initialContent={initialContent} />}
-          {savedAt && (
-            <p className="text-xs text-text-muted">
-              임시저장됨 {formatTime(savedAt)}
-            </p>
+          {draftLoaded && (
+            <Editor
+              onChange={setContent}
+              onImagesChange={handleImagesChange}
+              initialContent={initialContent}
+            />
           )}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={saving}
+              className="text-xs text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50"
+            >
+              {saving ? '저장 중...' : '임시저장'}
+            </button>
+            {savedAt && (
+              <p className="text-xs text-text-muted">
+                저장됨 {formatTime(savedAt)}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Password + Expiry grid */}

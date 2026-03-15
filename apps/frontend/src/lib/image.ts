@@ -16,20 +16,35 @@ export async function uploadImage(blob: Blob): Promise<string> {
   return data.url;
 }
 
-export async function replaceBlobsWithUrls(html: string): Promise<string> {
+export async function replaceBlobsWithUrls(
+  html: string,
+  images?: Record<string, Blob>
+): Promise<string> {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  const images = Array.from(doc.querySelectorAll('img[src^="blob:"]'));
 
-  await Promise.all(
-    images.map(async (img) => {
+  const blobImgs = Array.from(doc.querySelectorAll('img[src^="blob:"]'));
+  const idbImgs = images
+    ? Array.from(doc.querySelectorAll('img[src^="idb://"]'))
+    : [];
+
+  await Promise.all([
+    ...blobImgs.map(async (img) => {
       const src = (img as HTMLImageElement).src;
       const res = await fetch(src);
       const blob = await res.blob();
       const url = await uploadImage(blob);
       img.setAttribute('src', url);
-    })
-  );
+    }),
+    ...idbImgs.map(async (img) => {
+      const src = (img as HTMLImageElement).getAttribute('src')!;
+      const key = src.slice('idb://'.length);
+      const blob = images![key];
+      if (!blob) return;
+      const url = await uploadImage(blob);
+      img.setAttribute('src', url);
+    }),
+  ]);
 
   return doc.body.innerHTML;
 }
