@@ -33,6 +33,8 @@ export default function Page() {
 
   // Images accumulated from Editor (key → Blob)
   const imagesRef = useRef<Record<string, Blob>>({});
+  // Restored blob URL → idb key mapping (for save-time conversion)
+  const blobToKeyRef = useRef<Record<string, string>>({});
 
   // Restore draft on mount
   useEffect(() => {
@@ -48,11 +50,11 @@ export default function Page() {
 
           // Replace idb:// refs with blob URLs so Editor can display them
           let restoredHtml = draft.content;
-          const blobMap: Record<string, string> = {}; // key → blobUrl
+          blobToKeyRef.current = {};
 
           for (const [key, blob] of Object.entries(draft.images)) {
             const blobUrl = URL.createObjectURL(blob);
-            blobMap[key] = blobUrl;
+            blobToKeyRef.current[blobUrl] = key; // 역매핑: blobUrl → key
             restoredHtml = restoredHtml.split(`idb://${key}`).join(blobUrl);
           }
 
@@ -90,8 +92,15 @@ export default function Page() {
   }, []);
 
   const handleImagesChange = useCallback((images: Record<string, Blob>) => {
-    imagesRef.current = images;
+    imagesRef.current = { ...imagesRef.current, ...images };
   }, []);
+
+  function convertBlobsToKeys(html: string): string {
+    return Object.entries(blobToKeyRef.current).reduce(
+      (result, [blobUrl, key]) => result.split(blobUrl).join(`idb://${key}`),
+      html
+    );
+  }
 
   async function handleSaveDraft() {
     if (saving) return;
@@ -100,7 +109,7 @@ export default function Page() {
       const now = new Date().toISOString();
       await saveDraft({
         title,
-        content,
+        content: convertBlobsToKeys(content),
         expiresIn,
         savedAt: now,
         images: imagesRef.current,
@@ -192,6 +201,7 @@ export default function Page() {
               setGeneratedUrl('');
               setInitialContent('');
               imagesRef.current = {};
+              blobToKeyRef.current = {};
               setSavedAt(null);
             }}
             className="mt-6 text-sm text-brand-600 hover:text-brand-700 font-medium"
