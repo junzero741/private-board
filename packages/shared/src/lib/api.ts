@@ -3,6 +3,7 @@ export const API_ROUTES = {
   posts: {
     create: '/posts',
     unlock: (slug: string) => `/posts/${slug}/unlock`,
+    metadata: (slug: string) => `/posts/${slug}/metadata`,
     report: (slug: string) => `/posts/${slug}/report`,
   },
   uploads: {
@@ -20,6 +21,7 @@ export const ROUTE_PATTERNS = {
   posts: {
     create: '/',
     unlock: '/:slug/unlock',
+    metadata: '/:slug/metadata',
     report: '/:slug/report',
   },
   uploads: {
@@ -58,6 +60,13 @@ export interface CreatePostRequest {
 
 export interface CreatePostResponse {
   slug: string;
+}
+
+// 게시글 메타데이터
+export interface GetPostMetadataResponse {
+  title: string;
+  expiresAt: string | null; // ISO 8601
+  isExpired: boolean;
 }
 
 // 게시글 조회

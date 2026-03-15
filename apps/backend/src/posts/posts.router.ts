@@ -5,11 +5,12 @@ import {
   MAX_EXPIRES_HOURS,
   CreatePostRequest,
   CreatePostResponse,
+  GetPostMetadataResponse,
   UnlockPostRequest,
   UnlockPostResponse,
 } from '@private-board/shared';
 import { AppError } from '../lib/errors';
-import { createPost, unlockPost } from './posts.service';
+import { createPost, getPostMetadata, unlockPost } from './posts.service';
 
 const router = Router();
 
@@ -34,6 +35,27 @@ router.post(ROUTE_PATTERNS.posts.create, async (
 
     const result = await createPost(title, content, password, finalExpiresIn);
     res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get(ROUTE_PATTERNS.posts.metadata, async (
+  req: Request<{ slug: string }>,
+  res: Response<GetPostMetadataResponse | { error: string }>,
+  next: NextFunction
+) => {
+  try {
+    const { slug } = req.params;
+    const meta = await getPostMetadata(slug);
+    if (!meta) {
+      throw new AppError(404, 'Post not found', 'NOT_FOUND');
+    }
+    res.json({
+      title: meta.title,
+      expiresAt: meta.expiresAt ? meta.expiresAt.toISOString() : null,
+      isExpired: meta.isExpired,
+    });
   } catch (err) {
     next(err);
   }

@@ -22,6 +22,19 @@ export async function createPost(
   return { slug };
 }
 
+export async function getPostMetadata(
+  slug: string
+): Promise<{ title: string; expiresAt: Date | null; isExpired: boolean } | null> {
+  const post = await prisma.post.findUnique({
+    where: { slug },
+    select: { title: true, expiresAt: true },
+  });
+  if (!post) return null;
+
+  const isExpired = post.expiresAt != null && post.expiresAt < new Date();
+  return { title: post.title, expiresAt: post.expiresAt, isExpired };
+}
+
 export async function unlockPost(
   slug: string,
   password: string
