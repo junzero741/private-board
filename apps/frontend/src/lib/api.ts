@@ -2,12 +2,13 @@ import {
   API_ROUTES,
   CreatePostRequest,
   CreatePostResponse,
+  GetPostMetadataResponse,
   UnlockPostRequest,
   UnlockPostResponse,
   ReportReason,
 } from '@private-board/shared';
 
-export type { CreatePostRequest, CreatePostResponse, UnlockPostRequest, UnlockPostResponse, ReportReason };
+export type { CreatePostRequest, CreatePostResponse, GetPostMetadataResponse, UnlockPostRequest, UnlockPostResponse, ReportReason };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
@@ -19,6 +20,15 @@ export async function createPost(data: CreatePostRequest): Promise<CreatePostRes
   });
 
   if (!res.ok) throw new Error('게시글 저장에 실패했습니다.');
+  return res.json();
+}
+
+export async function getPostMetadata(slug: string): Promise<GetPostMetadataResponse | null> {
+  const res = await fetch(`${API_BASE}${API_ROUTES.posts.metadata(slug)}`, {
+    cache: 'no-store',
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) return null;
   return res.json();
 }
 

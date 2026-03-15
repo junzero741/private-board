@@ -2,12 +2,18 @@
 
 import { useState } from 'react';
 import { viewPost } from '@/lib/api';
+import type { GetPostMetadataResponse } from '@/lib/api';
 import { sanitizeHtml } from '@/lib/sanitize';
 import ReportModal from '@/components/ReportModal';
 
 type Step = 'auth' | 'view';
 
-export default function PostUnlock({ slug }: { slug: string }) {
+interface Props {
+  slug: string;
+  meta: GetPostMetadataResponse | null;
+}
+
+export default function PostUnlock({ slug, meta }: Props) {
   const [step, setStep] = useState<Step>('auth');
   const [password, setPassword] = useState('');
   const [post, setPost] = useState<{ title: string; content: string } | null>(null);
@@ -57,6 +63,45 @@ export default function PostUnlock({ slug }: { slug: string }) {
     );
   }
 
+  // 존재하지 않는 게시글
+  if (meta === null) {
+    return (
+      <section className="mx-auto max-w-md px-4 py-16">
+        <div className="rounded-xl border border-border bg-surface-card p-8 shadow-md text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-bg">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-error">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" x2="12" y1="8" y2="12" />
+              <line x1="12" x2="12.01" y1="16" y2="16" />
+            </svg>
+          </div>
+          <h1 className="text-lg font-semibold text-text-primary">존재하지 않는 문서</h1>
+          <p className="mt-1 text-sm text-text-secondary">링크가 잘못되었거나 삭제된 문서입니다.</p>
+        </div>
+      </section>
+    );
+  }
+
+  // 만료된 게시글
+  if (meta.isExpired) {
+    return (
+      <section className="mx-auto max-w-md px-4 py-16">
+        <div className="rounded-xl border border-border bg-surface-card p-8 shadow-md text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-bg">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-error">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <h1 className="text-lg font-semibold text-text-primary">만료된 문서</h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            열람 기간이 지나 더 이상 접근할 수 없습니다.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="mx-auto max-w-md px-4 py-16">
       <div className="rounded-xl border border-border bg-surface-card p-8 shadow-md text-center">
@@ -68,7 +113,7 @@ export default function PostUnlock({ slug }: { slug: string }) {
           </svg>
         </div>
 
-        <h1 className="text-lg font-semibold text-text-primary">보호된 문서</h1>
+        <h1 className="text-lg font-semibold text-text-primary">{meta.title}</h1>
         <p className="mt-1 text-sm text-text-secondary">
           이 문서는 비밀번호로 보호되어 있습니다.
         </p>

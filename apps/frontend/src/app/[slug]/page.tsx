@@ -1,9 +1,18 @@
 import type { Metadata } from 'next';
+import { getPostMetadata } from '@/lib/api';
 import PostUnlock from './post-unlock';
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const meta = await getPostMetadata(slug);
+  const title = meta ? `${meta.title} - 님보` : '비밀 문서 - 님보';
+
   return {
-    title: '비밀 문서 - 님보',
+    title,
     description: '비밀번호로 보호된 문서입니다.',
     robots: {
       index: false,
@@ -29,5 +38,6 @@ export default async function PostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return <PostUnlock slug={slug} />;
+  const meta = await getPostMetadata(slug);
+  return <PostUnlock slug={slug} meta={meta} />;
 }
