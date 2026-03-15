@@ -4,11 +4,14 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { AppError } from './lib/errors';
+import { initStorage } from './lib/storage';
 import { cleanupExpiredPosts } from './lib/cleanup';
 import postsRouter from './posts/posts.router';
 import uploadsRouter from './uploads/uploads.router';
 import reportsRouter from './reports/reports.router';
 import adminRouter from './admin/admin.router';
+
+initStorage();
 
 const host = process.env.HOST ?? '0.0.0.0';
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;

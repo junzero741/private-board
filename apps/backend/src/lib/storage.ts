@@ -81,21 +81,28 @@ export class R2StorageProvider implements StorageProvider {
   }
 }
 
-let storage: StorageProvider | null = null;
+let storage: StorageProvider | undefined;
+
+export function initStorage(): void {
+  const provider = process.env.STORAGE_PROVIDER ?? 'local';
+  if (provider === 'local' && process.env.NODE_ENV === 'production') {
+    throw new Error('LocalStorageProvider is not allowed in production');
+  }
+  switch (provider) {
+    case 'local':
+      storage = new LocalStorageProvider();
+      break;
+    case 'r2':
+      storage = new R2StorageProvider();
+      break;
+    default:
+      throw new Error(`Unknown storage provider: ${provider}`);
+  }
+}
 
 export function getStorage(): StorageProvider {
   if (!storage) {
-    const provider = process.env.STORAGE_PROVIDER ?? 'local';
-    switch (provider) {
-      case 'local':
-        storage = new LocalStorageProvider();
-        break;
-      case 'r2':
-        storage = new R2StorageProvider();
-        break;
-      default:
-        throw new Error(`Unknown storage provider: ${provider}`);
-    }
+    throw new Error('Storage not initialized. Call initStorage() first.');
   }
   return storage;
 }
