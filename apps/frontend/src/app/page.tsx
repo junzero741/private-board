@@ -5,6 +5,7 @@ import Editor from '@/components/Editor';
 import { createPost } from '@/lib/api';
 import { replaceBlobsWithUrls } from '@/lib/image';
 import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStore';
+import { shouldAutoSave } from '@/lib/draft';
 import { FEATURE_FLAGS } from '@private-board/shared';
 
 type Step = 'write' | 'done';
@@ -25,7 +26,6 @@ export default function Page() {
   const [error, setError] = useState('');
   const [expiresIn, setExpiresIn] = useState<string>('24');
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [initialContent, setInitialContent] = useState<string | undefined>(undefined);
@@ -102,23 +102,25 @@ export default function Page() {
     );
   }
 
-  async function handleSaveDraft() {
-    if (saving) return;
-    setSaving(true);
-    try {
-      const now = new Date().toISOString();
-      await saveDraft({
-        title,
-        content: convertBlobsToKeys(content),
-        expiresIn,
-        savedAt: now,
-        images: imagesRef.current,
-      });
-      setSavedAt(now);
-    } finally {
-      setSaving(false);
-    }
-  }
+  const autoSaveRef = useRef<() => Promise<void>>();
+  autoSaveRef.current = async () => {
+    if (!shouldAutoSave(title, content)) return;
+    const now = new Date().toISOString();
+    await saveDraft({
+      title,
+      content: convertBlobsToKeys(content),
+      expiresIn,
+      savedAt: now,
+      images: imagesRef.current,
+    });
+    setSavedAt(now);
+  };
+
+  useEffect(() => {
+    if (!draftLoaded || step !== 'write') return;
+    const id = setInterval(() => autoSaveRef.current?.(), 60_000);
+    return () => clearInterval(id);
+  }, [draftLoaded, step]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -247,21 +249,11 @@ export default function Page() {
               initialContent={initialContent}
             />
           )}
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={handleSaveDraft}
-              disabled={saving}
-              className="text-xs text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50"
-            >
-              {saving ? '저장 중...' : '임시저장'}
-            </button>
-            {savedAt && (
-              <p className="text-xs text-text-muted">
-                저장됨 {formatTime(savedAt)}
-              </p>
-            )}
-          </div>
+          {savedAt && (
+            <p className="text-xs text-text-muted text-right">
+              임시 저장됨 {formatTime(savedAt)}
+            </p>
+          )}
         </div>
 
         {/* Password + Expiry grid */}

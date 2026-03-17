@@ -21,6 +21,16 @@ interface Post {
 - 비밀번호는 bcrypt로 해싱하여 DB에 저장한다.
 - slug는 nanoid 등으로 추측 불가능하게 생성한다.
 
+### content 암호화 미적용 결정 (2026-03-17)
+
+DB가 탈취될 경우 content가 평문으로 노출된다는 우려로, 비밀번호 기반 content 암호화(PBKDF2 키 파생 + AES-256-GCM)를 검토했으나 **적용하지 않기로 결정**했다.
+
+**이유:** content를 비밀번호로 암호화하면 운영자(admin)도 content를 읽을 수 없다. 현재 스키마에는 `ILLEGAL_CONTENT`, `DEFAMATION` 등의 신고 사유를 처리하는 `Report` 모델이 있으며, 운영자가 신고된 게시글을 검토하는 기능이 설계에 존재한다. 완전한 content 암호화는 이 기능을 무력화한다.
+
+**대신 의존하는 보안 레이어:**
+- Railway PostgreSQL의 at-rest encryption
+- 앱 레이어 접근 제어 (비밀번호 검증 후에만 content 반환)
+
 ## 이미지 업로드 플로우
 
 에디터 작성 중에는 이미지를 로컬 blob URL로 미리보기하고, 저장 시점에만 R2에 업로드한다.
