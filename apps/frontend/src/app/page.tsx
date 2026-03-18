@@ -102,7 +102,7 @@ export default function Page() {
     );
   }
 
-  const autoSaveRef = useRef<() => Promise<void>>();
+  const autoSaveRef = useRef<(() => Promise<void>) | undefined>(undefined);
   autoSaveRef.current = async () => {
     if (!shouldAutoSave(title, content)) return;
     const now = new Date().toISOString();
